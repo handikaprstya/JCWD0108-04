@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 const db = require('../models')
 const user = db.user
 
+//ngoding sesuatu
 
 module.exports = {
     verifyToken : (req, res, next) => {
