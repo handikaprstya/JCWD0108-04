@@ -9,7 +9,7 @@ const useController = {
   register : async (req, res) => {
     try {
       const { username, email, password } = req.body;
-      const d = await user.findOne({
+      const d = await user.findOne ({
         where : {
           [Op.or] : [
             {username},
@@ -21,7 +21,7 @@ const useController = {
         const salt = await enkrip.genSalt(10);
         const hashPassword = await enkrip.hash(password, salt);
         const result = await user.create({ username, email, password : hashPassword });
-        const token = jwt.sign({ username, email, password }, "minpro123", {expiresIn :'1h'});
+        // const token = jwt.sign({ username, email, password }, "minpro123", {expiresIn :'1h'});
       
         await transporter.sendMail({
           from: "handikaprasetya.wisnu@gmail.com",
@@ -34,7 +34,7 @@ const useController = {
           status : true,
           message : 'success',
           data : result,
-          token
+          // token
         });
       }else{
         if (d.username == username) {throw({message:`Username must be unique`})}
@@ -81,9 +81,10 @@ const useController = {
     }
   },
   keepLogin: async (req, res) => {
-    console.log(req.body)
+    console.log("masuk keep login")
+    console.log(req.user)
     try {
-      const result = user.findOne({
+      const result = await user.findOne({
         where: {
           id: req.user.id
         }
@@ -99,6 +100,8 @@ const useController = {
     }
   },
   editPass: async (req, res) => {
+    console.log("masuk edit password")
+    console.log(req.user)
     try {
       const {currentPassword, newPassword, confirmPassword} = req.body;
       const getData = await user.findOne({ where: {id: req.user.id}})
@@ -122,7 +125,51 @@ const useController = {
       console.log(error)
       res.status(400).send(error)
     }
-  }
+  },
+  forgotPass: async (req, res) => {
+    try {
+      const {email} = req.body;
+      const isEmailExist = await user.findOne({
+        where : {
+          email : email
+        }
+      });
+      if (isEmailExist !== null) {
+        const {id, username, email} = isEmailExist;
+        const token = jwt.sign({id, username, email}, "minpro123");
+        await transporter.sendMail({
+          from : "handikaprasetya.wisnu@gmail.com",
+          to : email,
+          subject : 'Change password',
+          html :'<h1> Success </h1>'
+        })
+        res.status(200).send({
+          message : 'check your mail',
+          token
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(400).send(error);
+    }
+  },
+  resetPassword : async(req, res) =>{
+    try {
+      const salt = await enkrip.genSalt(10);
+      const hashPassword = await enkrip.hash(req.body.newPassword, salt);
+      const setData = await user.update(
+        {password : hashPassword},
+        {where :{
+          id : req.user.id
+        }});
+      res.status(200).send({
+        message : 'reset password sukses'
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(400).send(error);
+    }
+  },
 }
 
 module.exports = useController;
