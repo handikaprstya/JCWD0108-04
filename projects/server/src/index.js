@@ -2,7 +2,7 @@ require("dotenv/config");
 const express = require("express");
 const cors = require("cors");
 const { join } = require("path");
-const { userRouter, cashierRouter } = require("../router");
+const { userRouter, cashierRouter, transactionController, transactionRouter } = require("../router");
 const db = require('../models');
 
 const PORT = process.env.PORT || 8000;
@@ -25,6 +25,7 @@ app.use(express.json());
 
 app.use("/api/user", userRouter );
 app.use("/api/cashier", cashierRouter );
+app.use("/api/transaction", transactionRouter)
 
 app.get("/api", (req, res) => {
   res.send(`Hello, this is my API`);
