@@ -1,5 +1,5 @@
 const db = require('../models')
-const cashier = db.Cashier
+const user = db.user
 const jwt = require('jsonwebtoken')
 const enkrip = require('bcrypt')
 const { Op } = require('sequelize')
@@ -9,7 +9,7 @@ const cashierController = {
   add : async (req, res) => {
     try {
       const { username, email, password } = req.body;
-      const d = await cashier.findOne ({
+      const d = await user.findOne ({
         where : {
           [Op.or] : [
             {username},
@@ -21,7 +21,7 @@ const cashierController = {
         const defaultImage = 'https://thumb.viva.co.id/media/frontend/thumbs3/2022/09/01/631054190fbf5-ras-kucing-scottish-fold_1265_711.jpg'
         const salt = await enkrip.genSalt(10);
         const hashPassword = await enkrip.hash(password, salt);
-        const result = await cashier.create({ username, email, password : hashPassword, imgURL: defaultImage });
+        const result = await user.create({ username, email, password : hashPassword, imgURL: defaultImage });
         // const token = jwt.sign({ username, email, password }, "minpro123", {expiresIn :'1h'});
       
         // await transporter.sendMail({
@@ -49,7 +49,7 @@ const cashierController = {
   },
   readAll: async (req, res) => {
     try {
-      const d = await cashier.findAll ({
+      const d = await user.findAll ({
       });
         res.status(200).send({
           status : true,
@@ -67,13 +67,13 @@ const cashierController = {
     try {
       const { username } = req.body;
       
-      const isUserExist = await cashier.findOne({
+      const isUserExist = await user.findOne({
         where : {
           id : req.params.id
         }
       });
       if (isUserExist == null) throw {message: 'user not found'}
-      const updt = await cashier.update(
+      const updt = await user.update(
         { username },
         {where : {id : req.params.id}}
         );
@@ -88,7 +88,7 @@ const cashierController = {
   deleteCashier: async (req, res) => {
       console.log(req.params.id)
       try {
-        await cashier.destroy({
+        await user.destroy({
           where: {
             id: req.params.id
           }
